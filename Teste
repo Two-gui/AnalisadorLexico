@@ -1,0 +1,82 @@
+import re
+
+# Definição dos tipos de tokens
+TOKEN_REGEXES = {      
+    # Palavras Reservadas
+    'IF': r'\bif\b',
+    'ELSE': r'\belse\b',      
+    'FOR': r'\bfor\b',
+    'WHILE': r'\bwhile\b',
+    'PRINT': r'\bprint\b',
+    #
+    'NUM_INT': r'\d+',        # Números inteiros
+    'NUM_REAL': r'\d+\.\d+',  # Números reais
+    'STRING': r'"([^"\\]|\\.)*"',  # Para capturar qualquer texto entre aspas duplas, incluindo escape
+    'Identificador': r'\b[a-zA-Z_][a-zA-Z0-9_]*\b',  # Identificadores (variáveis, funções)
+    # Operações
+    'Soma': r'\+',              # Operador de soma
+    'Subtração': r'\-',             # Operador de subtração
+    'Multiplicador': r'\*',             # Operador de multiplicação
+    'Divisão': r'\/',            # Operador de divisão
+    'Atribuição': r'=',              # Operador de atribuição
+    #
+    'EsqPAREN': r'\(',            # Parêntese esquerdo
+    'DirPAREN': r'\)',            # Parêntese direito
+    'PontoVirgula': r';',          # Ponto e vírgula
+    'Espaço': r'\s+',       # Espaços em branco (serão ignorados)
+    # Operadores de comparação
+    'MenorQue': r'<',  # Operador de comparação menor que
+    'MaiorQue': r'>',  # Operador de comparação maior que
+    'MenorOuIgual': r'<=',  # Operador de comparação menor ou igual
+    'MaiorOuIgual': r'>=',  # Operador de comparação maior ou igual
+    'Igual': r'==',     # Operador de comparação de igualdade
+    # Chaves
+    'ChaveEsquerda': r'\{',   # Chave esquerda
+    'ChaveDireita': r'\}',    # Chave direita
+}
+
+# Função que cria um analisador léxico
+def lexer(code):
+    tokens = []  # Lista para armazenar os tokens encontrados
+    position = 0  # Posição na string de entrada
+
+    # Enquanto houver caracteres para processar
+    while position < len(code):
+        match = None
+
+        # Verifica cada tipo de token
+        for token_type, regex in TOKEN_REGEXES.items():
+            regex_pattern = re.compile(regex)
+            match = regex_pattern.match(code, position)
+
+            if match:
+                # Se um token for encontrado, adiciona à lista
+                if token_type != 'Espaço':  # Ignorar espaços em branco
+                    tokens.append((token_type, match.group(0)))
+
+                # Avança a posição da string
+                position = match.end()
+                break
+
+        if not match:
+            # Se não encontrar uma correspondência, lança um erro
+            raise SyntaxError(f"Caracter inválido encontrado: {code[position]}")
+
+    return tokens
+
+# Exemplo de código para analisar
+code = """
+if (x > 5) {
+    print("x é maior que 5");
+} else {
+    print("x não é maior que 5");
+}
+print("Hello World")
+"""
+
+# Usar o lexer para processar o código
+tokens = lexer(code)
+
+# Exibir os tokens encontrados
+for token in tokens:
+    print(f'{token[0]}: {token[1]}')
